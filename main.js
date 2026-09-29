@@ -549,7 +549,32 @@ document.addEventListener('DOMContentLoaded', () => {
       onEnterBack: () => updateWorldNav('02', 'THE HUMAN', 'human'),
     });
 
-    // Massive Editorial Staggered Statement Parallax
+    // Cover Stage Smooth Fade-Out On Scroll
+    const coverCenter = document.getElementById('humanCoverCenter');
+    const coverPrompt = document.getElementById('humanScrollPrompt');
+    if (coverCenter && coverPrompt) {
+      gsap.to([coverCenter, coverPrompt], {
+        scrollTrigger: {
+          trigger: '#humanCoverStage',
+          start: 'top top',
+          end: 'bottom 40%',
+          scrub: true,
+        },
+        opacity: 0,
+        y: -45,
+        ease: 'power1.in',
+      });
+
+      coverPrompt.addEventListener('click', () => {
+        const stmt = document.querySelector('.editorial-spread-statement');
+        if (stmt) {
+          if (lenis) lenis.scrollTo(stmt, { duration: 1.2, offset: -40 });
+          else stmt.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
+
+    // Massive Editorial Staggered Statement Parallax — Words Scroll Inside
     const wordNot = document.getElementById('wordNot');
     const wordEverything = document.getElementById('wordEverything');
     const wordIBuild = document.getElementById('wordIBuild');
@@ -563,9 +588,9 @@ document.addEventListener('DOMContentLoaded', () => {
           end: 'top 30%',
           scrub: 1,
         },
-        x: -80,
-        opacity: 0.2,
-        ease: 'power1.out'
+        x: -180,
+        opacity: 0,
+        ease: 'power2.out'
       });
 
       gsap.from(wordEverything, {
@@ -575,9 +600,10 @@ document.addEventListener('DOMContentLoaded', () => {
           end: 'top 20%',
           scrub: 1,
         },
-        x: 100,
-        letterSpacing: '0.15em',
-        ease: 'power1.out'
+        x: 180,
+        opacity: 0,
+        letterSpacing: '0.22em',
+        ease: 'power2.out'
       });
 
       gsap.from(wordIBuild, {
@@ -587,9 +613,9 @@ document.addEventListener('DOMContentLoaded', () => {
           end: 'center 40%',
           scrub: 1,
         },
-        x: -60,
-        opacity: 0.3,
-        ease: 'power1.out'
+        x: -140,
+        opacity: 0,
+        ease: 'power2.out'
       });
 
       gsap.from(wordIsCode, {
@@ -599,9 +625,23 @@ document.addEventListener('DOMContentLoaded', () => {
           end: 'bottom 50%',
           scrub: 1,
         },
-        x: 80,
+        x: 140,
+        opacity: 0,
         color: '#0E0E0E',
-        ease: 'power1.out'
+        ease: 'power2.out'
+      });
+
+      // Annotations reveal
+      gsap.from(['.spread-annotation', '.inline-editorial-callout'], {
+        scrollTrigger: {
+          trigger: '.editorial-spread-statement',
+          start: 'top 60%',
+        },
+        y: 20,
+        opacity: 0,
+        duration: 0.9,
+        stagger: 0.2,
+        ease: 'power2.out',
       });
     }
 

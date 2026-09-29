@@ -1026,6 +1026,100 @@ body[data-world="creator"] .drawer-link .d-key {
 }
 
 /* ==========================================================================
+   World 02: Human Opening Cover Stage (Blank Suspense Threshold)
+   ========================================================================== */
+.human-cover-stage {
+  min-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2rem, 4vw, 3.5rem) 0 clamp(2rem, 3vh, 3rem);
+  position: relative;
+  box-sizing: border-box;
+}
+
+.human-cover-center {
+  text-align: center;
+  margin: auto 0;
+  padding: 3rem 1.5rem;
+  will-change: transform, opacity;
+}
+
+.cover-badge {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem;
+  letter-spacing: 0.25em;
+  color: var(--color-crimson, #C1121F);
+  margin-bottom: 1.4rem;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.human-cover-title {
+  font-family: var(--font-serif);
+  font-size: clamp(3.8rem, 11vw, 8.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: var(--color-ink, #0E0E0E);
+  margin-bottom: 1.4rem;
+}
+
+.human-cover-sub {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--color-ink-dim, #555555);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.human-scroll-prompt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--color-ink-dim, #555555);
+  text-transform: uppercase;
+  margin: 0 auto;
+  cursor: pointer;
+  padding: 0.65rem 1.6rem;
+  border-radius: 30px;
+  border: 1px solid rgba(14, 14, 14, 0.12);
+  transition: all 0.3s var(--ease-editorial);
+}
+
+.human-scroll-prompt:hover {
+  border-color: var(--color-crimson, #C1121F);
+  color: var(--color-crimson, #C1121F);
+  transform: translateY(2px);
+}
+
+.prompt-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-crimson, #C1121F);
+  box-shadow: 0 0 8px rgba(193, 18, 31, 0.7);
+  animation: pulseTransitionDot 1s infinite alternate;
+}
+
+.prompt-arrow {
+  font-size: 1rem;
+  color: var(--color-crimson, #C1121F);
+  animation: bounceArrow 1.6s infinite ease-in-out;
+}
+
+@keyframes bounceArrow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* ==========================================================================
    Massive Editorial Statement Spread:
    NOT
                 EVERYTHING
@@ -1033,11 +1127,12 @@ body[data-world="creator"] .drawer-link .d-key {
                     IS CODE.
    ========================================================================== */
 .editorial-spread-statement {
-  padding: clamp(3rem, 7vh, 6rem) 0 clamp(4rem, 9vh, 8rem);
+  padding: clamp(6rem, 14vh, 12rem) 0 clamp(4rem, 9vh, 8rem);
   display: flex;
   flex-direction: column;
-  gap: clamp(1rem, 3vh, 2.5rem);
+  gap: clamp(1.2rem, 3vh, 2.5rem);
   position: relative;
+  overflow: hidden;
 }
 
 .spread-row {
