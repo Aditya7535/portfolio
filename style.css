@@ -1386,6 +1386,171 @@ body[data-world="creator"] .drawer-link .d-key {
   gap: 3rem;
 }
 
+/* Archival Portrait Plate */
+.archival-portrait-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border: 1px solid var(--color-paper-border);
+  padding: 1.5rem;
+  background-color: rgba(14, 14, 14, 0.02);
+  position: relative;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.archival-portrait-plate:hover {
+  border-color: rgba(14, 14, 14, 0.25);
+  box-shadow: 0 12px 32px rgba(14, 14, 14, 0.05);
+}
+
+.plate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--color-red-deep);
+  text-transform: uppercase;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-paper-border);
+}
+
+.plate-frame {
+  position: relative;
+  padding: 0.5rem;
+  background-color: #f7f4ee;
+  border: 1px solid rgba(14, 14, 14, 0.08);
+}
+
+.plate-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--color-red-deep);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.plate-corner.top-left {
+  top: 0;
+  left: 0;
+  border-top: 2px solid var(--color-red-deep);
+  border-left: 2px solid var(--color-red-deep);
+}
+
+.plate-corner.top-right {
+  top: 0;
+  right: 0;
+  border-top: 2px solid var(--color-red-deep);
+  border-right: 2px solid var(--color-red-deep);
+}
+
+.plate-corner.bottom-left {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid var(--color-red-deep);
+  border-left: 2px solid var(--color-red-deep);
+}
+
+.plate-corner.bottom-right {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid var(--color-red-deep);
+  border-right: 2px solid var(--color-red-deep);
+}
+
+.plate-img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background-color: #111;
+}
+
+.plate-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: grayscale(100%) contrast(1.08) brightness(0.96);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.6s ease;
+  display: block;
+}
+
+.archival-portrait-plate:hover .plate-photo {
+  transform: scale(1.025);
+  filter: grayscale(80%) contrast(1.1) brightness(0.98);
+}
+
+.plate-film-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 65%, rgba(0,0,0,0.25) 100%);
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+.plate-red-seal {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-red-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(247, 244, 238, 0.88);
+  backdrop-filter: blur(4px);
+  transform: rotate(-12deg);
+  box-shadow: 0 4px 12px rgba(158, 27, 27, 0.15);
+  pointer-events: none;
+  transition: transform 0.4s ease;
+}
+
+.archival-portrait-plate:hover .plate-red-seal {
+  transform: rotate(0deg) scale(1.06);
+}
+
+.seal-inner {
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-red-deep);
+  text-transform: uppercase;
+}
+
+.plate-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 0.4rem;
+  font-family: var(--font-sans);
+}
+
+.plate-subject {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-ink);
+  text-transform: uppercase;
+}
+
+.plate-craft {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-dim);
+  text-transform: uppercase;
+}
+
 .editorial-spec-sheet {
   border: 1px solid var(--color-paper-border);
   padding: 2rem;
@@ -1890,6 +2055,11 @@ body[data-world="creator"] .drawer-link .d-key {
 
   .role-desc {
     font-size: 0.85rem;
+  }
+
+  .archival-portrait-plate {
+    padding: 1rem;
+    gap: 0.75rem;
   }
 
   .editorial-spec-sheet {
