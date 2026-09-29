@@ -1453,11 +1453,11 @@ body[data-world="creator"] .drawer-link .d-key {
 .editorial-drop-cap {
   float: left;
   font-family: var(--font-serif);
-  font-size: 4.8rem;
-  line-height: 0.8;
-  padding-top: 0.1rem;
-  padding-right: 0.9rem;
-  padding-bottom: 0.2rem;
+  font-size: 4.0rem;
+  line-height: 0.84;
+  padding-top: 0.02rem;
+  padding-right: 0.85rem;
+  margin-bottom: 0.5rem;
   color: var(--color-red-deep);
   font-weight: 400;
 }
@@ -1902,7 +1902,10 @@ body[data-world="creator"] .drawer-link .d-key {
   }
 
   .editorial-drop-cap {
-    font-size: 3.8rem;
+    font-size: 3.35rem;
+    line-height: 0.8;
+    margin-bottom: 0.45rem;
+    padding-right: 0.75rem;
   }
 
   .human-stamp-cluster {
