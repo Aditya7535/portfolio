@@ -135,15 +135,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Smooth scroll handler to target section
-  const jumpToSection = (targetSelector) => {
-    const targetEl = document.querySelector(targetSelector);
-    if (!targetEl) return;
+  // Navigation router: Handles both same-page scrolling and multi-page routing
+  const navigateTo = (href) => {
     closeDrawer();
-    if (lenis) {
-      lenis.scrollTo(targetEl, { duration: 1.2, offset: 0 });
+    if (!href) return;
+
+    // Internal hash on current page
+    if (href.startsWith('#')) {
+      const targetEl = document.querySelector(href);
+      if (targetEl) {
+        if (lenis) {
+          lenis.scrollTo(targetEl, { duration: 1.2, offset: 0 });
+        } else {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+      return;
+    }
+
+    // Multi-page destination check
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const targetFile = href.split('#')[0];
+    const targetHash = href.includes('#') ? '#' + href.split('#')[1] : null;
+
+    const isCurrentPage = (targetFile === currentPath) || 
+                          ((currentPath === '' || currentPath === '/') && targetFile === 'index.html');
+
+    if (isCurrentPage) {
+      if (targetHash) {
+        const el = document.querySelector(targetHash);
+        if (el) {
+          if (lenis) lenis.scrollTo(el, { duration: 1.2, offset: 0 });
+          else el.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        if (lenis) lenis.scrollTo(0, { duration: 1.2 });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } else {
-      targetEl.scrollIntoView({ behavior: 'smooth' });
+      window.location.href = href;
     }
   };
 
@@ -180,35 +210,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const allNavLinks = [...shortcutLinks, ...drawerLinks];
   allNavLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetSelector = link.getAttribute('data-section') || link.getAttribute('href');
-      jumpToSection(targetSelector);
+      const href = link.getAttribute('href');
+      if (href) {
+        e.preventDefault();
+        navigateTo(href);
+      }
     });
   });
 
-  // Also wire brand link to return to the top smoothly
+  // Wire brand link to index.html / top
   const brandLink = document.getElementById('brandLink');
   if (brandLink) {
     brandLink.addEventListener('click', (e) => {
       e.preventDefault();
-      jumpToSection('#world-void');
+      navigateTo('index.html');
     });
   }
 
+  // Wire Return to Top buttons
+  const returnTopBtns = document.querySelectorAll('.return-top-btn, #returnTopBtn');
+  returnTopBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (lenis) lenis.scrollTo(0, { duration: 1.2 });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
   // Global Keyboard Shortcuts: Keys 1 to 5 to jump between worlds
-  const worldKeyMap = {
-    '1': '#world-void',
-    '2': '#world-human',
-    '3': '#world-engine-full',
-    '4': '#world-cut',
-    '5': '#world-creator'
+  const keyToPageMap = {
+    '1': 'index.html',
+    '2': 'human.html',
+    '3': 'engine.html',
+    '4': 'cut.html',
+    '5': 'creator.html'
   };
 
   window.addEventListener('keydown', (e) => {
     const tag = e.target.tagName ? e.target.tagName.toLowerCase() : '';
     if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
-    if (worldKeyMap[e.key]) {
-      jumpToSection(worldKeyMap[e.key]);
+    if (keyToPageMap[e.key]) {
+      navigateTo(keyToPageMap[e.key]);
     }
   });
 
@@ -248,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const voidDescriptors = document.getElementById('voidDescriptors');
     const voidScrollIndicator = document.getElementById('voidScrollIndicator');
 
-    const voidTimeline = gsap.timeline({
+    if (document.getElementById('world-void') && voidPinContainer) {
+      const voidTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: '#world-void',
         start: 'top top',
@@ -395,10 +438,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ease: 'power2.in',
       }, 8.6)
       .to({}, { duration: 0.8 });
+    }
 
     /* ----------------------------------------------------------------------
        SECTION 02: THE HUMAN (MAGAZINE SPREAD & EDITORIAL REVEALS)
        ---------------------------------------------------------------------- */
+    if (document.getElementById('world-human')) {
     ScrollTrigger.create({
       trigger: '#world-human',
       start: 'top 50%',
@@ -488,10 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
       duration: 1,
       ease: 'power2.out',
     });
+    }
 
     /* ----------------------------------------------------------------------
        SECTION 03 PREVIEW: THE ENGINE (ACCELERATION & DARKENING TRANSITION)
        ---------------------------------------------------------------------- */
+    if (document.getElementById('world-engine') && document.getElementById('engineTransitionStage')) {
     const stackWords = [
       document.getElementById('stackCode'),
       document.getElementById('stackAi'),
@@ -553,12 +600,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ease: 'power3.out',
     }, 2.2)
     .to({}, { duration: 1.0 });
+    }
 
     /* ----------------------------------------------------------------------
        WORLD 03: THE ENGINE (FULL WORLD CHOREOGRAPHY & INTERACTIONS)
        ---------------------------------------------------------------------- */
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    if (document.getElementById('world-engine-full')) {
     // World Nav Controller Observer for World 03
     ScrollTrigger.create({
       trigger: '#world-engine-full',
@@ -828,10 +877,12 @@ document.addEventListener('DOMContentLoaded', () => {
           ease: 'power2.out',
         }, '-=0.3');
     }
+    }
 
     /* ----------------------------------------------------------------------
        WORLD 04: THE CUT (FULL WORLD CHOREOGRAPHY & INTERACTIONS)
        ---------------------------------------------------------------------- */
+    if (document.getElementById('world-cut')) {
     // World Nav Controller Observer for World 04
     ScrollTrigger.create({
       trigger: '#world-cut',
@@ -1120,10 +1171,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ease: 'power3.out',
       });
     }
+    }
 
     /* ----------------------------------------------------------------------
        WORLD 05: THE CREATOR (FULL WORLD CHOREOGRAPHY & INTERACTIONS)
        ---------------------------------------------------------------------- */
+    if (document.getElementById('world-creator')) {
     // World Nav Controller Observer for World 05
     ScrollTrigger.create({
       trigger: '#world-creator',
@@ -1462,6 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         duration: 1.2,
         ease: 'power3.out',
       });
+    }
     }
 
   } else {
