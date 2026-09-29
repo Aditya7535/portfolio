@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Remove no-js flag
   document.documentElement.classList.remove('no-js');
 
+  // Global responsive and motion preferences accessible across all pages & sections
+  const isMobile = window.innerWidth <= 768;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   /* ------------------------------------------------------------------------
      1. LENIS SMOOTH SCROLL INITIALIZATION
      ------------------------------------------------------------------------ */
@@ -21,11 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
       touchMultiplier: 1.5,
     });
 
-    function raf(time) {
-      lenis.raf(time);
+    if (typeof gsap === 'undefined') {
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
       requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
   }
 
   /* ------------------------------------------------------------------------
@@ -401,8 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    const isMobile = window.innerWidth <= 768;
-
     // Void Stage 1: Initial Crop -> ADITYA enters horizontally & letter-spacing stretches: A D I T Y A
     voidTimeline
       .to(voidScrollIndicator, {
@@ -742,8 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ----------------------------------------------------------------------
        WORLD 03: THE ENGINE (FULL WORLD CHOREOGRAPHY & INTERACTIONS)
        ---------------------------------------------------------------------- */
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (document.getElementById('world-engine-full')) {
     // World Nav Controller Observer for World 03
     ScrollTrigger.create({
@@ -1089,72 +1091,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const sceneCutTimeline = document.getElementById('scene-cut-timeline');
 
     if (playheadTrack && timelineScrubberOuter && sceneCutTimeline) {
-      const isDesktopTimeline = window.innerWidth > 768;
+      let currentProgress = 0.15;
 
-      ScrollTrigger.create({
-        trigger: sceneCutTimeline,
-        start: isDesktopTimeline ? 'top 12%' : 'top 65%',
-        end: isDesktopTimeline ? '+=160%' : 'bottom 35%',
-        pin: isDesktopTimeline,
-        scrub: 0.2,
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          // Span across ruler from 12% to 94%
-          const leftPct = 12 + progress * 82;
-          playheadTrack.style.left = `${leftPct}%`;
+      const updatePlayhead = (prog) => {
+        // Clamp progress between 0 and 1
+        const p = Math.max(0, Math.min(1, prog));
+        currentProgress = p;
 
-          // Format simulated timecode 00:00:00:00 to 00:01:15:00 (75 sec * 24fps)
-          if (playheadTc) {
-            const totalFrames = Math.floor(progress * 1800);
-            const mins = String(Math.floor(totalFrames / (60 * 24))).padStart(2, '0');
-            const secs = String(Math.floor((totalFrames % (60 * 24)) / 24)).padStart(2, '0');
-            const frames = String(totalFrames % 24).padStart(2, '0');
-            playheadTc.textContent = `00:${mins}:${secs}:${frames}`;
-          }
+        // Position across tracks: 12% to 94%
+        const leftPct = 12 + p * 82;
+        playheadTrack.style.left = `${leftPct}%`;
 
-          // Dynamically highlight active primary clip
-          const primaryClips = document.querySelectorAll('.track-v1 .clip-main');
-          if (primaryClips.length === 6) {
-            const thresholds = [0, 0.18, 0.38, 0.54, 0.70, 0.88, 1.01];
-            primaryClips.forEach((clip, idx) => {
-              if (progress >= thresholds[idx] && progress < thresholds[idx + 1]) {
-                clip.classList.add('highlight');
-              } else {
-                clip.classList.remove('highlight');
-              }
-            });
-          }
-        }
-      });
-
-      // Interactive Click & Drag on Desktop Timeline Scrubber
-      let isDraggingPlayhead = false;
-      const updatePlayheadFromPointer = (clientX) => {
-        const rect = timelineScrubberOuter.getBoundingClientRect();
-        const rawPct = (clientX - rect.left) / rect.width;
-        const clampedPct = Math.max(0.12, Math.min(0.94, rawPct));
-        playheadTrack.style.left = `${clampedPct * 100}%`;
-
+        // Format simulated timecode 00:00:00:00 to 00:01:15:00 (75 sec * 24fps)
         if (playheadTc) {
-          const normProgress = (clampedPct - 0.12) / 0.82;
-          const totalFrames = Math.floor(normProgress * 1800);
+          const totalFrames = Math.floor(p * 1800);
           const mins = String(Math.floor(totalFrames / (60 * 24))).padStart(2, '0');
           const secs = String(Math.floor((totalFrames % (60 * 24)) / 24)).padStart(2, '0');
           const frames = String(totalFrames % 24).padStart(2, '0');
           playheadTc.textContent = `00:${mins}:${secs}:${frames}`;
         }
+
+        // Dynamically highlight active primary clip on Track V1
+        const primaryClips = document.querySelectorAll('.track-v1 .clip-main');
+        if (primaryClips.length === 6) {
+          const thresholds = [0, 0.18, 0.38, 0.54, 0.70, 0.88, 1.01];
+          primaryClips.forEach((clip, idx) => {
+            if (p >= thresholds[idx] && p < thresholds[idx + 1]) {
+              clip.classList.add('highlight');
+            } else {
+              clip.classList.remove('highlight');
+            }
+          });
+        }
+      };
+
+      // Set initial playhead position
+      updatePlayhead(0.15);
+
+      // Bidirectional Scroll Scrub: Moves forward when scrolling down, backward when scrolling up
+      ScrollTrigger.create({
+        trigger: sceneCutTimeline,
+        start: isMobile ? 'top 80%' : 'top 20%',
+        end: isMobile ? 'bottom 20%' : '+=130%',
+        pin: isMobile ? false : true,
+        scrub: true,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          updatePlayhead(self.progress);
+        }
+      });
+
+      // Interactive Mouse Wheel on Timeline Scrubber: Scroll directly to scrub forward/backward
+      timelineScrubberOuter.addEventListener('wheel', (e) => {
+        const delta = e.deltaY > 0 ? 0.04 : -0.04;
+        updatePlayhead(currentProgress + delta);
+      }, { passive: true });
+
+      // Interactive Click & Drag on Desktop Timeline Scrubber
+      let isDraggingPlayhead = false;
+      const scrubFromPointer = (clientX) => {
+        const rect = timelineScrubberOuter.getBoundingClientRect();
+        const rawPct = (clientX - rect.left) / rect.width;
+        const mappedProgress = (rawPct - 0.12) / 0.82;
+        updatePlayhead(mappedProgress);
       };
 
       timelineScrubberOuter.style.cursor = 'ew-resize';
       timelineScrubberOuter.addEventListener('mousedown', (e) => {
         isDraggingPlayhead = true;
-        updatePlayheadFromPointer(e.clientX);
+        scrubFromPointer(e.clientX);
       });
 
       window.addEventListener('mousemove', (e) => {
         if (isDraggingPlayhead) {
-          updatePlayheadFromPointer(e.clientX);
+          scrubFromPointer(e.clientX);
         }
       });
 
