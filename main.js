@@ -135,7 +135,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Navigation router: Handles both same-page scrolling and multi-page routing
+  /* ------------------------------------------------------------------------
+     3B. CINEMATIC PAGE TRANSITION SHUTTER
+     ------------------------------------------------------------------------ */
+  const curtain = document.getElementById('pageTransitionCurtain');
+  const transitionLabel = document.getElementById('transitionLabel');
+  const transitionProgress = document.getElementById('transitionProgress');
+  let isTransitioning = false;
+
+  const worldTitles = {
+    'index.html': '01 // THE VOID',
+    'human.html': '02 // THE HUMAN',
+    'engine.html': '03 // THE ENGINE',
+    'cut.html': '04 // THE CUT',
+    'creator.html': '05 // THE CREATOR'
+  };
+
+  const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+
+  // Initial Page Enter Animation (Reveal new world)
+  if (curtain && typeof gsap !== 'undefined') {
+    if (transitionLabel) {
+      transitionLabel.textContent = worldTitles[currentFile] || 'CHRONICLE ARCHIVE';
+    }
+
+    // Start with curtain covering screen, then wipe away upward
+    gsap.set(curtain, { yPercent: 0 });
+    if (transitionProgress) gsap.set(transitionProgress, { width: '100%' });
+
+    gsap.to(curtain, {
+      yPercent: -100,
+      duration: 0.65,
+      ease: 'power3.inOut',
+      delay: 0.05,
+      onComplete: () => {
+        document.body.classList.remove('is-transitioning');
+        if (transitionProgress) gsap.set(transitionProgress, { width: '0%' });
+      }
+    });
+
+    // Handle Back/Forward Cache so browser history returns cleanly
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+        isTransitioning = false;
+        document.body.classList.remove('is-transitioning');
+        gsap.set(curtain, { yPercent: -100 });
+      }
+    });
+  }
+
+  // Navigation router: Handles both same-page scrolling and cinematic multi-page routing
   const navigateTo = (href) => {
     closeDrawer();
     if (!href) return;
@@ -172,6 +221,57 @@ document.addEventListener('DOMContentLoaded', () => {
         if (lenis) lenis.scrollTo(0, { duration: 1.2 });
         else window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+      return;
+    }
+
+    // Inter-page transition with Shutter Wipe
+    if (isTransitioning) return;
+    isTransitioning = true;
+    document.body.classList.add('is-transitioning');
+
+    if (transitionLabel) {
+      transitionLabel.textContent = worldTitles[targetFile] || 'ENTERING CHRONICLE';
+    }
+
+    if (curtain && typeof gsap !== 'undefined') {
+      // Position curtain at bottom and sweep up to 0%
+      gsap.set(curtain, { yPercent: 100 });
+      if (transitionProgress) gsap.set(transitionProgress, { width: '0%' });
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          window.location.href = href;
+        }
+      });
+
+      tl.to(curtain, {
+        yPercent: 0,
+        duration: 0.45,
+        ease: 'power3.inOut',
+      }, 0);
+
+      if (transitionProgress) {
+        tl.to(transitionProgress, {
+          width: '100%',
+          duration: 0.45,
+          ease: 'power2.inOut',
+        }, 0);
+      }
+
+      const smoothContent = document.getElementById('smooth-content');
+      if (smoothContent) {
+        tl.to(smoothContent, {
+          scale: 0.98,
+          opacity: 0.35,
+          duration: 0.4,
+          ease: 'power2.in',
+        }, 0);
+      }
+
+      // Fallback navigation timeout in case of unexpected delays
+      setTimeout(() => {
+        window.location.href = href;
+      }, 600);
     } else {
       window.location.href = href;
     }
@@ -206,26 +306,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Wire up all shortcut links (center bar + drawer)
-  const allNavLinks = [...shortcutLinks, ...drawerLinks];
-  allNavLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      if (href) {
-        e.preventDefault();
-        navigateTo(href);
-      }
-    });
-  });
+  // Universal internal link interceptor with transition support
+  document.addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.defaultPrevented) return;
+    if (e.button !== 0) return;
 
-  // Wire brand link to index.html / top
-  const brandLink = document.getElementById('brandLink');
-  if (brandLink) {
-    brandLink.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || link.target === '_blank') return;
+
+    // Check if it's an internal world route or anchor
+    if (href.endsWith('.html') || href.includes('.html#') || href.startsWith('#')) {
       e.preventDefault();
-      navigateTo('index.html');
-    });
-  }
+      navigateTo(href);
+    }
+  });
 
   // Wire Return to Top buttons
   const returnTopBtns = document.querySelectorAll('.return-top-btn, #returnTopBtn');
@@ -237,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Global Keyboard Shortcuts: Keys 1 to 5 to jump between worlds
+  // Global Keyboard Shortcuts: Keys 1 to 5 to jump between worlds with transition
   const keyToPageMap = {
     '1': 'index.html',
     '2': 'human.html',
