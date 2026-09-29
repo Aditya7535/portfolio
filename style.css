@@ -3804,11 +3804,12 @@ body[data-world="creator"] .drawer-link .d-key {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 28%;
+  left: 12%;
   pointer-events: none;
   z-index: 10;
   transform: translateX(-50%);
-  transition: left 0.15s ease-out;
+  transition: none;
+  will-change: left;
 }
 
 .timeline-playhead-head {

@@ -1086,27 +1086,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const playheadTrack = document.getElementById('timelinePlayheadTrack');
     const playheadTc = document.getElementById('playheadTc');
     const timelineScrubberOuter = document.getElementById('timelineScrubberOuter');
+    const sceneCutTimeline = document.getElementById('scene-cut-timeline');
 
-    if (playheadTrack && timelineScrubberOuter) {
+    if (playheadTrack && timelineScrubberOuter && sceneCutTimeline) {
+      const isDesktopTimeline = window.innerWidth > 768;
+
       ScrollTrigger.create({
-        trigger: '#scene-cut-timeline',
-        start: 'top 75%',
-        end: 'bottom 30%',
-        scrub: 0.5,
+        trigger: sceneCutTimeline,
+        start: isDesktopTimeline ? 'top 12%' : 'top 65%',
+        end: isDesktopTimeline ? '+=160%' : 'bottom 35%',
+        pin: isDesktopTimeline,
+        scrub: 0.2,
+        anticipatePin: 1,
         onUpdate: (self) => {
           const progress = self.progress;
-          const leftPct = 12 + progress * 76; // keep within ruler bounds
+          // Span across ruler from 12% to 94%
+          const leftPct = 12 + progress * 82;
           playheadTrack.style.left = `${leftPct}%`;
 
-          // Format simulated timecode 00:00:00:00 to 00:01:15:00
+          // Format simulated timecode 00:00:00:00 to 00:01:15:00 (75 sec * 24fps)
           if (playheadTc) {
-            const totalFrames = Math.floor(progress * 1800); // 75 seconds * 24 fps
+            const totalFrames = Math.floor(progress * 1800);
             const mins = String(Math.floor(totalFrames / (60 * 24))).padStart(2, '0');
             const secs = String(Math.floor((totalFrames % (60 * 24)) / 24)).padStart(2, '0');
             const frames = String(totalFrames % 24).padStart(2, '0');
             playheadTc.textContent = `00:${mins}:${secs}:${frames}`;
           }
+
+          // Dynamically highlight active primary clip
+          const primaryClips = document.querySelectorAll('.track-v1 .clip-main');
+          if (primaryClips.length === 6) {
+            const thresholds = [0, 0.18, 0.38, 0.54, 0.70, 0.88, 1.01];
+            primaryClips.forEach((clip, idx) => {
+              if (progress >= thresholds[idx] && progress < thresholds[idx + 1]) {
+                clip.classList.add('highlight');
+              } else {
+                clip.classList.remove('highlight');
+              }
+            });
+          }
         }
+      });
+
+      // Interactive Click & Drag on Desktop Timeline Scrubber
+      let isDraggingPlayhead = false;
+      const updatePlayheadFromPointer = (clientX) => {
+        const rect = timelineScrubberOuter.getBoundingClientRect();
+        const rawPct = (clientX - rect.left) / rect.width;
+        const clampedPct = Math.max(0.12, Math.min(0.94, rawPct));
+        playheadTrack.style.left = `${clampedPct * 100}%`;
+
+        if (playheadTc) {
+          const normProgress = (clampedPct - 0.12) / 0.82;
+          const totalFrames = Math.floor(normProgress * 1800);
+          const mins = String(Math.floor(totalFrames / (60 * 24))).padStart(2, '0');
+          const secs = String(Math.floor((totalFrames % (60 * 24)) / 24)).padStart(2, '0');
+          const frames = String(totalFrames % 24).padStart(2, '0');
+          playheadTc.textContent = `00:${mins}:${secs}:${frames}`;
+        }
+      };
+
+      timelineScrubberOuter.style.cursor = 'ew-resize';
+      timelineScrubberOuter.addEventListener('mousedown', (e) => {
+        isDraggingPlayhead = true;
+        updatePlayheadFromPointer(e.clientX);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isDraggingPlayhead) {
+          updatePlayheadFromPointer(e.clientX);
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingPlayhead = false;
       });
     }
 
